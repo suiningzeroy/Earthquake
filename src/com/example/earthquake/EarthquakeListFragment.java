@@ -29,128 +29,130 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 public class EarthquakeListFragment extends ListFragment {
-	
-	ArrayAdapter<Quake> aa;
-	ArrayList<Quake> earthquakes = new ArrayList<Quake>();
-	
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-	  super.onActivityCreated(savedInstanceState);
-	  
-	  int layoutID = android.R.layout.simple_list_item_1;
-	  aa = new ArrayAdapter<Quake>(getActivity(), layoutID ,earthquakes);
-	  setListAdapter(aa);
-	  
-	  Thread t = new Thread(new Runnable() {
-		  public void run() {
-		    refreshEarthquakes();
-		  }
-	  });
-	  
+  
+  ArrayAdapter<Quake> aa;
+  ArrayList<Quake> earthquakes = new ArrayList<Quake>();
+  
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
+    
+    int layoutID = android.R.layout.simple_list_item_1;
+    aa = new ArrayAdapter<Quake>(getActivity(), layoutID ,earthquakes);
+    setListAdapter(aa);
+    
+    Thread t = new Thread(new Runnable() {
+      public void run() {
+        refreshEarthquakes();
+      }
+    });
+    
       t.start();
 
-	}
-	
-	  private static final String TAG = "EARTHQUAKE";
-	  private Handler handler = new Handler();
+  }
+  
+    private static final String TAG = "EARTHQUAKE";
+    private Handler handler = new Handler();
 
-	  public void refreshEarthquakes() {
-	    // Get the XML
-	    URL url;
-	    
-	    try {
-	      String quakeFeed = getString(R.string.quake_feed);
-	      url = new URL(quakeFeed);
+  public void refreshEarthquakes() {
+    // Get the XML
+    URL url;
+      
+    try {
+      String quakeFeed = getString(R.string.quake_feed);
+      url = new URL(quakeFeed);
 
-	      URLConnection connection;
-	      connection = url.openConnection();
+      URLConnection connection;
+      connection = url.openConnection();
 
-	      HttpURLConnection httpConnection = (HttpURLConnection)connection;
-	      int responseCode = httpConnection.getResponseCode();
+      HttpURLConnection httpConnection = (HttpURLConnection)connection;
+      int responseCode = httpConnection.getResponseCode();
 
-	      if (responseCode == HttpURLConnection.HTTP_OK) {
-	    	  
-	        InputStream in = httpConnection.getInputStream();
-	        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-	        DocumentBuilder db = dbf.newDocumentBuilder();
-	        
-	        // Parse the earthquake feed.
-	        Document dom = db.parse(in);
-	        Element docEle = dom.getDocumentElement();
-	        // Clear the old earthquakes
-	        earthquakes.clear();
-	        // Get a list of each earthquake entry.
-	        NodeList nl = docEle.getElementsByTagName("entry");
+      if (responseCode == HttpURLConnection.HTTP_OK) {
+          
+        InputStream in = httpConnection.getInputStream();
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+          
+        // Parse the earthquake feed.
+        Document dom = db.parse(in);
+        Element docEle = dom.getDocumentElement();
+        // Clear the old earthquakes
+        earthquakes.clear();
+        // Get a list of each earthquake entry.
+        NodeList nl = docEle.getElementsByTagName("entry");
 
-	        if (nl != null && nl.getLength() > 0) {
-	          for (int i = 0 ; i < nl.getLength(); i++) {
-	            Element entry = (Element)nl.item(i);
-	            Element title = (Element)entry.getElementsByTagName("title").item(0);
-	            Element g = (Element) entry.getElementsByTagName("georss:point").item(0);
-	            Element when = (Element)entry.getElementsByTagName("updated").item(0);
-	            Element link = (Element)entry.getElementsByTagName("link").item(0);
-	            String details = title.getFirstChild().getNodeValue();
-	            String hostname = "http://earthquake.usgs.gov";
-	            String linkString = hostname + link.getAttribute("href");
-	            String point = g.getFirstChild().getNodeValue();
-	            String dt = when.getFirstChild().getNodeValue();
-	            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd’T’hh:mm:ss’Z’");
-	            Date qdate = (Date) new GregorianCalendar(0,0,0).getTime();
-	            try {
-	              qdate =  sdf.parse(dt);
-	            } 
-	            catch (ParseException e) {
-	              Log.d(TAG, "Date parsing exception.", e);
-	            } 
-	            catch (java.text.ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-	            String[] location = point.split(" ");
-	            Location l = new Location("dummyGPS");
+        if (nl != null && nl.getLength() > 0) {
+          for (int i = 0 ; i < nl.getLength(); i++) {
+            Element entry = (Element)nl.item(i);
+            Element title = (Element)entry.getElementsByTagName("title").item(0);
+            Element g = (Element) entry.getElementsByTagName("georss:point").item(0);
+            Element when = (Element)entry.getElementsByTagName("updated").item(0);
+            Element link = (Element)entry.getElementsByTagName("link").item(0);
+            String details = title.getFirstChild().getNodeValue();
+            String hostname = "http://earthquake.usgs.gov";
+            String linkString = hostname + link.getAttribute("href");
+            String point = g.getFirstChild().getNodeValue();
+            String dt = when.getFirstChild().getNodeValue();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
+            Date qdate = (Date) new GregorianCalendar(0,0,0).getTime();
+            try {
+              qdate =  sdf.parse(dt);
+            } 
+            catch (ParseException e) {
+              Log.d(TAG, "Date parsing exception.", e);
+            } 
+            catch (java.text.ParseException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } 
+            String[] location = point.split(" ");
+            Location l = new Location("dummyGPS");
 
-	            l.setLatitude(Double.parseDouble(location[0]));
-	            l.setLongitude(Double.parseDouble(location[1]));
+            l.setLatitude(Double.parseDouble(location[0]));
+            l.setLongitude(Double.parseDouble(location[1]));
 
-	            String magnitudeString = details.split(" ")[1];
+            String magnitudeString = details.split(" ")[1];
 
-	            int end = magnitudeString.length()-1;
-	            double magnitude = Double.parseDouble(magnitudeString.substring(0, end));
+            int end = magnitudeString.length()-1;
+            double magnitude = Double.parseDouble(magnitudeString.substring(0, end));
 
-	            details = details.split(",")[1].trim();
-	            final Quake quake = new Quake(qdate, details, l, magnitude, linkString);
+            details = details.split(",")[1].trim();
+            final Quake quake = new Quake(qdate, details, l, magnitude, linkString);
 
-	            // Process a newly found earthquake
-	            handler.post(new Runnable() {
-	              public void run() {
-	                addNewQuake(quake);
-	              }
-	            });
-	          }
-	        }
-	      }
-	    } 
-	    catch (MalformedURLException e) {
-	      Log.d(TAG, "MalformedURLException");
-	    } 
-	    catch (IOException e) {
-	      Log.d(TAG, "IOException");
-	    } 
-	    catch (ParserConfigurationException e) {
-	       Log.d(TAG, "Parser Configuration Exception");
-	    } 
-	    catch (SAXException e) {
-	      Log.d(TAG, "SAX Exception");
-	    }
-	    finally 
-	    {
-	    }
-	  }
+              // Process a newly found earthquake
+            handler.post(new Runnable() {
+              public void run() {
+                addNewQuake(quake);
+              }
+            });
+          }
+        }
+      }
+    } 
+    catch (MalformedURLException e) {
+      Log.d(TAG, "MalformedURLException");
+    } 
+    catch (IOException e) {
+      Log.d(TAG, "IOException");
+    } 
+    catch (ParserConfigurationException e) {
+       Log.d(TAG, "Parser Configuration Exception");
+    } 
+    catch (SAXException e) {
+      Log.d(TAG, "SAX Exception");
+    }
+    finally {
+    }
+  }
 
-	  private void addNewQuake(Quake _quake) {
-		// Add the new quake to our list of earthquakes.
-		earthquakes.add(_quake);
-		// Notify the array adapter of a change.
-		aa.notifyDataSetChanged();
-		}
+  private void addNewQuake(Quake _quake) {
+    EarthquakeActivity earthquakeActivity = (EarthquakeActivity)getActivity();
+    if (_quake.getMagnitude() > earthquakeActivity.minimumMagnitude) {
+    // Add the new quake to our list of earthquakes.
+      earthquakes.add(_quake);
+    }
+    // Notify the array adapter of a change.
+    aa.notifyDataSetChanged();
+  }
 }
