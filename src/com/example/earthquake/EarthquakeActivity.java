@@ -79,31 +79,13 @@ public class EarthquakeActivity extends Activity {
     Context context = getApplicationContext();
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     
-    /* minimumMagnitude =
+    minimumMagnitude =
       Integer.parseInt(prefs.getString(PreferencesActivity.PREF_MIN_MAG, "3"));
     updateFreq =
-      Integer.parseInt(prefs.getString(PreferencesActivity.PREF_UPDATE_FREQ, "60"));*/
-
-    int minMagIndex = prefs.getInt(PreferencesActivity.PREF_MIN_MAG_INDEX, 0);
-    
-    if (minMagIndex < 0)
-      minMagIndex = 0;
-    
-    int freqIndex = prefs.getInt(PreferencesActivity.PREF_UPDATE_FREQ_INDEX, 0);
-    
-    if (freqIndex < 0)
-      freqIndex = 0;
+      Integer.parseInt(prefs.getString(PreferencesActivity.PREF_UPDATE_FREQ, "60"));
     
     autoUpdateChecked = prefs.getBoolean(PreferencesActivity.PREF_AUTO_UPDATE, false);
-    
-    Resources r = getResources();
-    // Get the option values from the arrays.
-    String[] minMagValues = r.getStringArray(R.array.magnitude);
-    String[] freqValues = r.getStringArray(R.array.update_freq_values);
-    
-    // Convert the values to ints.
-    minimumMagnitude = Integer.valueOf(minMagValues[minMagIndex]);
-    updateFreq = Integer.valueOf(freqValues[freqIndex]);
+
   }
 
 
